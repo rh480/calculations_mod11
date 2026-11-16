@@ -436,3 +436,12 @@ def test_schema_with_mixed_int_and_float():
 
     assert calc.a == 100.0
     assert calc.b == 23.5
+
+@pytest.mark.parametrize("raw,expected", [
+    ("Add", CalculationType.ADDITION),
+    ("Sub", CalculationType.SUBTRACTION),
+    ("Multiply", CalculationType.MULTIPLICATION),
+    ("Divide", CalculationType.DIVISION),
+])
+def test_short_type_names_accepted(raw, expected):
+    assert CalculationBase(type=raw, a=1, b=1).type == expected

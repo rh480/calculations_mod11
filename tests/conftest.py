@@ -6,6 +6,13 @@ import pytest
 from playwright.sync_api import sync_playwright
 import requests
 
+import uuid
+import pytest
+from sqlalchemy.orm import Session
+from app.database import Base, engine
+from app.models.user import User
+
+
 @pytest.fixture(scope='session')
 def fastapi_server():
     """
@@ -72,3 +79,29 @@ def page(browser):
     page = browser.new_page()
     yield page
     page.close()
+    
+@pytest.fixture(scope="session")
+def db_engine():
+    Base.metadata.create_all(bind=engine)
+    yield engine
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def db_session(db_engine):
+    session = Session(bind=db_engine, autoflush=False)
+    yield session
+    session.rollback()  # nothing persists between tests
+    session.close()
+
+
+@pytest.fixture
+def user(db_session):
+    suffix = uuid.uuid4().hex[:8]
+    u = User(
+        username=f"user_{suffix}",
+        email=f"{suffix}@example.com",
+    )
+    db_session.add(u)
+    db_session.flush()
+    return u
