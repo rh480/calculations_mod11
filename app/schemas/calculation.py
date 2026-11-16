@@ -30,6 +30,13 @@ from pydantic import (
     field_validator,
 )
 
+_TYPE_ALIASES = {
+    "add": "addition",
+    "sub": "subtraction",
+    "subtract": "subtraction",
+    "multiply": "multiplication",
+    "divide": "division",
+}
 
 class CalculationType(str, Enum):
     """
@@ -90,7 +97,8 @@ class CalculationBase(BaseModel):
         This allows values such as Addition, ADDITION, and addition.
         """
         if isinstance(value, str):
-            return value.strip().lower()
+            value = value.strip().lower()
+            return _TYPE_ALIASES.get(value, value)
         return value
 
     @model_validator(mode="after")
