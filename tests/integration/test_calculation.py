@@ -30,6 +30,7 @@ from app.models.calculation import (
     Division,
 )
 
+from app.models.user import User
 
 # Helper function to create a dummy user_id for testing.
 def dummy_user_id():
@@ -351,3 +352,23 @@ def test_polymorphic_method_calling():
         result = calc.get_result()
         assert result == expected, \
             f"{calc_type} failed: expected {expected}, got {result}"
+
+def test_inputs_property_returns_both_operands():
+    calc = Addition(user_id=uuid.uuid4(), a=2, b=3)
+    assert calc.inputs == [2, 3]
+
+
+def test_base_calculation_get_result_not_implemented():
+    calc = Calculation(user_id=uuid.uuid4(), a=1, b=2)
+    with pytest.raises(NotImplementedError):
+        calc.get_result()
+
+
+def test_calculation_repr_includes_type_and_operands():
+    calc = Addition(user_id=uuid.uuid4(), a=1, b=2)
+    assert repr(calc) == "<Calculation(type=addition, a=1, b=2)>"
+
+
+def test_user_repr_includes_username_and_email():
+    user = User(username="alice", email="alice@example.com")
+    assert repr(user) == "<User(username=alice, email=alice@example.com)>"

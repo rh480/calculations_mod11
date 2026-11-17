@@ -4,6 +4,10 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models.calculation import Calculation, Addition, Division
 from app.schemas.calculation import CalculationRead
+from unittest.mock import MagicMock
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from app.database import get_db, get_engine, get_sessionmaker
 
 def test_insert_and_read_back(db_session, user):
     calc = Calculation.create("Divide", user.id, 10, 4)
@@ -49,3 +53,43 @@ def test_read_schema_serializes_orm_row(db_session, user):
     assert read.result == 3
     assert set(read.model_dump()) == {
         "id", "a", "b", "type", "result", "user_id", "created_at", "updated_at"}
+
+
+def test_get_db_yields_session_and_closes_it(monkeypatch):
+    fake_session = MagicMock()
+    monkeypatch.setattr("app.database.SessionLocal", lambda: fake_session)
+
+    gen = get_db()
+    assert next(gen) is fake_session
+    fake_session.close.assert_not_called()
+
+    with pytest.raises(StopIteration):
+        next(gen)
+    fake_session.close.assert_called_once()
+
+
+def test_get_db_closes_session_even_when_request_fails(monkeypatch):
+    fake_session = MagicMock()
+    monkeypatch.setattr("app.database.SessionLocal", lambda: fake_session)
+
+    gen = get_db()
+    next(gen)
+    with pytest.raises(RuntimeError):
+        gen.throw(RuntimeError("route failed"))
+    fake_session.close.assert_called_once()
+
+
+def test_get_engine_returns_engine_for_given_url():
+    engine = get_engine("sqlite:///:memory:")
+    assert isinstance(engine, Engine)
+    assert engine.url.drivername == "sqlite"
+
+
+def test_get_sessionmaker_binds_to_engine():
+    engine = get_engine("sqlite:///:memory:")
+    session = get_sessionmaker(engine)()
+    try:
+        assert isinstance(session, Session)
+        assert session.bind is engine
+    finally:
+        session.close()
