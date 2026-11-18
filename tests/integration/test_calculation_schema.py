@@ -13,6 +13,8 @@ Key Testing Concepts:
 4. Business Rules: Verify domain-specific validation (e.g., no division by 0)
 """
 
+import uuid
+
 import pytest
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -445,3 +447,10 @@ def test_schema_with_mixed_int_and_float():
 ])
 def test_short_type_names_accepted(raw, expected):
     assert CalculationBase(type=raw, a=1, b=1).type == expected
+
+
+#Test that non-string types for the 'type' field are rejected
+@pytest.mark.parametrize("bad_type", [123, None, 4.5])
+def test_calculation_create_rejects_non_string_type(bad_type):
+    with pytest.raises(ValidationError):
+        CalculationCreate(type=bad_type, a=1, b=2, user_id=uuid.uuid4())
