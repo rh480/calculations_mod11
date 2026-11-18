@@ -1,3 +1,22 @@
+# Module 11
+
+GitHub URL:
+https://github.com/rh480/calculations_mod11
+
+
+Dockerhub URL: 
+https://hub.docker.com/repository/docker/rh48/601_module11/general
+
+Screenshots:
+
+![GitHub Actions](/Screenshots/mod11SS_GitHubAction.png)
+
+![DockerHub Tags](/Screenshots/mod11SS_GitHubAction.png)
+
+# Reflection
+In this module, I learned a lot more about database development. I learned about how the calculator can be structured to use SQLAcademy and how to use Pydantic schemas to validate the data before it is stored. With SQLAlchemy I used single table inheritance so all the calculations share one table and there is a column that decides what subclass the query returns. I also learned how to associate calculations to a user using a foreign key. Pydantic also helped to validate the inputs by checking if they are valid such as not accepting non-numeric inputs, and blocking division by zero. I also struggled when some tests failed because the schema only accepted “addition” but the factory accepted “add” so it resulted in an error. I had to make sure there was a validator so all the names match and both are accepted. Unit tests were used to cover the factory and schemas and the integration test created the rows in PostgreSQL and checked invalid foreign keys. I also had to fix the GitHub actions tests and update a lot of other things to make sure everything passed. I struggled with Trivy again but I was able to get it to work by updating the requirements.txt and adding a trivyignore again. I also struggled with the CI because it broke in my virtual environment due to cache. I was finally able to fix everything and get it to run properly. One of my biggest issues was debugging the environment. I kept running into connection errors with different causes such as variable issues and port and conflicts from previous leftover Compose containers. I learned a lot from what each error meant and how to fix the configuration so it worked. 
+
+
 # 📦 Project Setup
 
 ---
